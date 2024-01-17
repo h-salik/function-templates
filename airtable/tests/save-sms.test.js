@@ -1,15 +1,11 @@
-const helpers = require('../../test/test-helper');
-const saveSms = require('../functions/save-sms.protected').handler;
-const Twilio = require('twilio');
-
-const event = {};
+import { afterAll, beforeAll, jest } from '@jest/globals';
+import helpers from '../../test/test-helper';
+import Twilio from 'twilio';
 
 const mockAirtableTable = {
-  create: jest.fn(() =>
-    Promise.resolve({
-      err: 'This is an error message',
-    })
-  ),
+  create: jest.fn().mockResolvedValue({
+    err: 'This is an error message',
+  }),
 };
 
 const mockAirtableBase = {
@@ -24,11 +20,16 @@ const mockAirtableClient = {
   }),
 };
 
-jest.mock('airtable', () => {
-  return jest.fn().mockImplementation(() => {
+jest.unstable_mockModule('airtable', () => ({
+  default: jest.fn().mockImplementation(() => {
     return mockAirtableClient;
-  });
-});
+  }),
+}));
+
+const airtable = (await import('airtable')).default;
+const saveSms = (await import('../functions/save-sms.protected')).default;
+
+const event = {};
 
 const context = {
   AIRTABLE_API_KEY: 'keyAbcD12efG3HijK',
